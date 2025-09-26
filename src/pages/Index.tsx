@@ -6,6 +6,7 @@ import { ProductivityStatsComponent } from '@/components/ProductivityStats';
 import { useProductivity } from '@/hooks/useProductivity';
 import { TaskCategory } from '@/types/task';
 import { Badge } from '@/components/ui/badge';
+import { NotificationBanner } from '@/components/NotificationBanner';
 import { 
   CheckCircle, 
   Clock, 
@@ -59,6 +60,9 @@ const Index = () => {
             Manage your tasks intelligently with built-in productivity tracking and personalized insights
           </p>
         </div>
+
+        {/* Notifications */}
+        <NotificationBanner />
 
         {/* Quick Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
