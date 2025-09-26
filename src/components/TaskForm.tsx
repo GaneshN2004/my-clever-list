@@ -5,11 +5,12 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Switch } from '@/components/ui/switch';
 import { TaskCategory } from '@/types/task';
-import { Plus, Briefcase, GraduationCap, Coffee } from 'lucide-react';
+import { Plus, Briefcase, GraduationCap, Coffee, Bell, Calendar } from 'lucide-react';
 
 interface TaskFormProps {
-  onAddTask: (title: string, description: string, category: TaskCategory) => void;
+  onAddTask: (title: string, description: string, category: TaskCategory, dueDate?: Date, notificationsEnabled?: boolean) => void;
 }
 
 const categoryConfig = {
@@ -22,16 +23,21 @@ export const TaskForm = ({ onAddTask }: TaskFormProps) => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState<TaskCategory>('work');
+  const [dueDate, setDueDate] = useState('');
+  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [isOpen, setIsOpen] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim()) return;
     
-    onAddTask(title.trim(), description.trim(), category);
+    const taskDueDate = dueDate ? new Date(dueDate) : undefined;
+    onAddTask(title.trim(), description.trim(), category, taskDueDate, notificationsEnabled);
     setTitle('');
     setDescription('');
     setCategory('work');
+    setDueDate('');
+    setNotificationsEnabled(true);
     setIsOpen(false);
   };
 
@@ -98,6 +104,35 @@ export const TaskForm = ({ onAddTask }: TaskFormProps) => {
                 })}
               </SelectContent>
             </Select>
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="dueDate">
+              <Calendar className="w-4 h-4 inline mr-1" />
+              Due Date (Optional)
+            </Label>
+            <Input
+              id="dueDate"
+              type="datetime-local"
+              value={dueDate}
+              onChange={(e) => setDueDate(e.target.value)}
+              className="transition-smooth focus:shadow-glow"
+              min={new Date().toISOString().slice(0, 16)}
+            />
+          </div>
+          
+          <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+            <div className="flex items-center space-x-2">
+              <Bell className="w-4 h-4 text-primary" />
+              <Label htmlFor="notifications" className="text-sm font-medium">
+                Enable Reminders
+              </Label>
+            </div>
+            <Switch
+              id="notifications"
+              checked={notificationsEnabled}
+              onCheckedChange={setNotificationsEnabled}
+            />
           </div>
           
           <div className="flex gap-2 pt-2">

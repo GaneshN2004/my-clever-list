@@ -11,7 +11,10 @@ import {
   Briefcase, 
   GraduationCap, 
   Coffee,
-  CheckCircle2
+  CheckCircle2,
+  Calendar,
+  Bell,
+  BellOff
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -52,6 +55,25 @@ const formatTime = (minutes: number): string => {
   const hours = Math.floor(minutes / 60);
   const mins = minutes % 60;
   return `${hours}h ${mins}m`;
+};
+
+const formatDueDate = (dueDate: Date): string => {
+  const now = new Date();
+  const diffMs = dueDate.getTime() - now.getTime();
+  const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+  const diffDays = Math.floor(diffHours / 24);
+
+  if (diffMs < 0) {
+    return 'Overdue';
+  } else if (diffHours < 1) {
+    return 'Due soon';
+  } else if (diffHours < 24) {
+    return `Due in ${diffHours}h`;
+  } else if (diffDays === 1) {
+    return 'Due tomorrow';
+  } else {
+    return `Due in ${diffDays} days`;
+  }
 };
 
 export const TaskItem = ({ 
@@ -113,6 +135,32 @@ export const TaskItem = ({
                 <Clock className="w-3 h-3 mr-1" />
                 {formatTime(task.timeSpent)}
               </div>
+              
+              {task.dueDate && (
+                <div className={cn(
+                  "flex items-center text-xs",
+                  task.dueDate.getTime() < new Date().getTime() 
+                    ? "text-destructive" 
+                    : task.dueDate.getTime() - new Date().getTime() < 2 * 60 * 60 * 1000 
+                      ? "text-orange-500" 
+                      : "text-muted-foreground"
+                )}>
+                  <Calendar className="w-3 h-3 mr-1" />
+                  {formatDueDate(task.dueDate)}
+                </div>
+              )}
+              
+              {task.notificationsEnabled && task.dueDate && (
+                <div className="flex items-center text-xs text-primary">
+                  <Bell className="w-3 h-3" />
+                </div>
+              )}
+              
+              {!task.notificationsEnabled && task.dueDate && (
+                <div className="flex items-center text-xs text-muted-foreground">
+                  <BellOff className="w-3 h-3" />
+                </div>
+              )}
               
               {isActiveTimer && (
                 <Badge className="bg-primary text-primary-foreground animate-pulse">

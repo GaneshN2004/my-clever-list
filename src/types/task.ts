@@ -11,6 +11,9 @@ export interface Task {
   timeSpent: number; // in minutes
   isActive: boolean; // currently being timed
   startTime?: Date;
+  dueDate?: Date;
+  notificationsEnabled: boolean;
+  reminderSent?: boolean;
 }
 
 export interface ProductivityStats {

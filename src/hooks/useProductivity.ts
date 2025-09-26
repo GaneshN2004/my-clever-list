@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Task, TaskCategory, ProductivityStats, DailyProductivity } from '@/types/task';
 import { toast } from '@/hooks/use-toast';
+import { useNotifications } from '@/hooks/useNotifications';
 
 const STORAGE_KEY = 'smart-todo-tasks';
 const DAILY_STATS_KEY = 'smart-todo-daily-stats';
@@ -8,6 +9,7 @@ const DAILY_STATS_KEY = 'smart-todo-daily-stats';
 export const useProductivity = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [activeTimer, setActiveTimer] = useState<string | null>(null);
+  const { requestPermission, showTimerComplete, checkDueTasks } = useNotifications();
 
   // Load tasks from localStorage on mount
   useEffect(() => {
@@ -18,6 +20,9 @@ export const useProductivity = () => {
         createdAt: new Date(task.createdAt),
         completedAt: task.completedAt ? new Date(task.completedAt) : undefined,
         startTime: task.startTime ? new Date(task.startTime) : undefined,
+        dueDate: task.dueDate ? new Date(task.dueDate) : undefined,
+        notificationsEnabled: task.notificationsEnabled ?? true,
+        reminderSent: task.reminderSent ?? false,
       }));
       setTasks(parsedTasks);
     }
@@ -48,7 +53,22 @@ export const useProductivity = () => {
     return () => clearInterval(interval);
   }, [activeTimer]);
 
-  const addTask = useCallback((title: string, description: string, category: TaskCategory) => {
+  // Check for due tasks every 5 minutes
+  useEffect(() => {
+    checkDueTasks(tasks);
+    const interval = setInterval(() => {
+      checkDueTasks(tasks);
+    }, 5 * 60 * 1000); // 5 minutes
+
+    return () => clearInterval(interval);
+  }, [tasks, checkDueTasks]);
+
+  // Request notification permission on first load
+  useEffect(() => {
+    requestPermission();
+  }, [requestPermission]);
+
+  const addTask = useCallback((title: string, description: string, category: TaskCategory, dueDate?: Date, notificationsEnabled: boolean = true) => {
     const newTask: Task = {
       id: crypto.randomUUID(),
       title,
@@ -58,6 +78,9 @@ export const useProductivity = () => {
       createdAt: new Date(),
       timeSpent: 0,
       isActive: false,
+      dueDate,
+      notificationsEnabled,
+      reminderSent: false,
     };
 
     setTasks(prev => [newTask, ...prev]);
@@ -127,10 +150,14 @@ export const useProductivity = () => {
   const stopTimer = useCallback(() => {
     if (!activeTimer) return;
 
+    let completedTask: Task | undefined;
+    let sessionTime = 0;
+
     setTasks(prev => prev.map(task => {
       if (task.id === activeTimer && task.isActive && task.startTime) {
         const now = new Date();
-        const sessionTime = Math.floor((now.getTime() - task.startTime.getTime()) / 60000);
+        sessionTime = Math.floor((now.getTime() - task.startTime.getTime()) / 60000);
+        completedTask = task;
         return {
           ...task,
           isActive: false,
@@ -141,13 +168,17 @@ export const useProductivity = () => {
       return task;
     }));
 
-    const task = tasks.find(t => t.id === activeTimer);
     setActiveTimer(null);
+    
+    if (completedTask && sessionTime > 0) {
+      showTimerComplete(completedTask.title, sessionTime);
+    }
+    
     toast({
       title: "Timer Stopped",
-      description: `Stopped tracking time for "${task?.title}"`,
+      description: `Stopped tracking time for "${completedTask?.title}"`,
     });
-  }, [activeTimer, tasks]);
+  }, [activeTimer, tasks, showTimerComplete]);
 
   const deleteTask = useCallback((id: string) => {
     if (activeTimer === id) {
