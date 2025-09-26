@@ -53,15 +53,21 @@ export const useProductivity = () => {
     return () => clearInterval(interval);
   }, [activeTimer]);
 
+  const updateTask = useCallback((id: string, updates: Partial<Task>) => {
+    setTasks(prev => prev.map(task => 
+      task.id === id ? { ...task, ...updates } : task
+    ));
+  }, []);
+
   // Check for due tasks every 5 minutes
   useEffect(() => {
-    checkDueTasks(tasks);
+    checkDueTasks(tasks, updateTask);
     const interval = setInterval(() => {
-      checkDueTasks(tasks);
+      checkDueTasks(tasks, updateTask);
     }, 5 * 60 * 1000); // 5 minutes
 
     return () => clearInterval(interval);
-  }, [tasks, checkDueTasks]);
+  }, [tasks, checkDueTasks, updateTask]);
 
   // Request notification permission on first load
   useEffect(() => {
@@ -262,6 +268,7 @@ export const useProductivity = () => {
     deleteTask,
     startTimer,
     stopTimer,
+    updateTask,
     getProductivityStats,
     getProductivityTips,
   };

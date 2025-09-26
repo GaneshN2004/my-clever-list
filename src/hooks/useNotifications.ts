@@ -100,7 +100,7 @@ export const useNotifications = () => {
   }, [showNotification]);
 
   // Check for due tasks (called periodically)
-  const checkDueTasks = useCallback((tasks: Task[]) => {
+  const checkDueTasks = useCallback((tasks: Task[], updateTask?: (taskId: string, updates: Partial<Task>) => void) => {
     const now = new Date();
     
     tasks.forEach(task => {
@@ -114,6 +114,10 @@ export const useNotifications = () => {
       // Send reminder if due within 2 hours or overdue
       if (hoursUntilDue <= 2) {
         showTaskReminder(task);
+        // Mark reminder as sent to avoid duplicates
+        if (updateTask) {
+          updateTask(task.id, { reminderSent: true });
+        }
       }
     });
   }, [showTaskReminder]);

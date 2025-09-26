@@ -24,6 +24,7 @@ interface TaskItemProps {
   onDelete: (id: string) => void;
   onStartTimer: (id: string) => void;
   onStopTimer: () => void;
+  onUpdateTask: (id: string, updates: Partial<Task>) => void;
   isActiveTimer: boolean;
 }
 
@@ -82,6 +83,7 @@ export const TaskItem = ({
   onDelete, 
   onStartTimer, 
   onStopTimer, 
+  onUpdateTask,
   isActiveTimer 
 }: TaskItemProps) => {
   const categoryInfo = categoryConfig[task.category];
@@ -150,16 +152,22 @@ export const TaskItem = ({
                 </div>
               )}
               
-              {task.notificationsEnabled && task.dueDate && (
-                <div className="flex items-center text-xs text-primary">
-                  <Bell className="w-3 h-3" />
-                </div>
-              )}
-              
-              {!task.notificationsEnabled && task.dueDate && (
-                <div className="flex items-center text-xs text-muted-foreground">
-                  <BellOff className="w-3 h-3" />
-                </div>
+              {task.dueDate && (
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => onUpdateTask(task.id, { 
+                    notificationsEnabled: !task.notificationsEnabled,
+                    reminderSent: false // Reset reminder when toggling
+                  })}
+                  className="h-6 w-6 p-0 text-xs"
+                >
+                  {task.notificationsEnabled ? (
+                    <Bell className="w-3 h-3 text-primary" />
+                  ) : (
+                    <BellOff className="w-3 h-3 text-muted-foreground" />
+                  )}
+                </Button>
               )}
               
               {isActiveTimer && (

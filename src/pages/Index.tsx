@@ -26,6 +26,7 @@ const Index = () => {
     deleteTask,
     startTimer,
     stopTimer,
+    updateTask,
     getProductivityStats,
     getProductivityTips,
   } = useProductivity();
@@ -153,15 +154,16 @@ const Index = () => {
               ) : (
                 <div className="space-y-3">
                   {filteredTasks.map(task => (
-                    <TaskItem
-                      key={task.id}
-                      task={task}
-                      onToggleComplete={toggleTask}
-                      onDelete={deleteTask}
-                      onStartTimer={startTimer}
-                      onStopTimer={stopTimer}
-                      isActiveTimer={activeTimer === task.id}
-                    />
+                <TaskItem
+                  key={task.id}
+                  task={task}
+                  onToggleComplete={toggleTask}
+                  onDelete={deleteTask}
+                  onStartTimer={startTimer}
+                  onStopTimer={stopTimer}
+                  onUpdateTask={updateTask}
+                  isActiveTimer={activeTimer === task.id}
+                />
                   ))}
                 </div>
               )}
