@@ -21,7 +21,7 @@ export const useNotifications = () => {
     if (Notification.permission === 'denied') {
       toast({
         title: "Notifications blocked",
-        description: "Please enable notifications in your browser settings.",
+        description: "To enable: click the lock icon in the address bar → Site settings → Notifications → Allow. Then reload this page.",
         variant: "destructive",
       });
       return false;
